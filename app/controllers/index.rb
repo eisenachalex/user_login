@@ -1,30 +1,43 @@
 enable :sessions
 
 get '/' do
-  # Look in app/views/index.erb
-  erb :index
+    if session[:valid_user]
+      erb :welcome
+    else
+      erb :index
+    end
 end
 
 post '/login' do
 @username = params[:username]
 @password = params[:password]
-erb :process_login
+@valid_user =  User.find_by_username(@username) 
+
+if @valid_user == nil 
+  erb :failed_login
+elsif @valid_user.password != @password
+  erb :failed_login
+else
+  session[:valid_user] = params[:username]
+  redirect to("/")
+end
 
 end
 
+get '/create' do
+  
+  erb :create
+end
 
+post '/create' do
+  p "THIS IS THE CODE:#{params[:post][:username]}"
+  @user = User.create(params[:post])
+  session[:valid_user] = params[:post][:username]
+  redirect to("/")
+end
 
+get '/logout' do
+  session[:valid_user] = nil
+  erb :index
 
-
-
-
-
-
-
-
-
-
-
-get '/:value' do
-  session[:value] = params[:value]
 end
